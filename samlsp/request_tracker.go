@@ -36,6 +36,9 @@ type TrackedRequest struct {
 	URI           string `json:"uri"`
 }
 
+// TrackedRequestIndexPrefix refer @ivan-californias
+const TrackedRequestIndexPrefix = "idx-"
+
 // TrackedRequestCodec handles encoding and decoding of a TrackedRequest.
 type TrackedRequestCodec interface {
 	// Encode returns an encoded string representing the TrackedRequest.
