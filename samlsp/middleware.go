@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"encoding/xml"
 	"net/http"
+	"strings"
 
 	"github.com/crewjam/saml"
 )
@@ -193,7 +194,17 @@ func (m *Middleware) HandleStartAuthFlow(w http.ResponseWriter, r *http.Request)
 
 // CreateSessionFromAssertion is invoked by ServeHTTP when we have a new, valid SAML assertion.
 func (m *Middleware) CreateSessionFromAssertion(w http.ResponseWriter, r *http.Request, assertion *saml.Assertion, redirectURI string) {
-	if trackedRequestIndex := r.Form.Get("RelayState"); trackedRequestIndex != "" {
+	// Validate with @ivan-californias
+	if trackedRequestIndex := r.Form.Get("RelayState"); strings.HasPrefix(trackedRequestIndex, TrackedRequestIndexPrefix) {
+		trackedRequest, err := m.RequestTracker.GetTrackedRequest(r, trackedRequestIndex)
+		if err != nil {
+			m.OnError(w, r, err)
+			return
+		}
+		m.RequestTracker.StopTrackingRequest(w, r, trackedRequestIndex)
+
+		redirectURI = trackedRequest.URI
+	} else if trackedRequestIndex := r.Form.Get("RelayState"); trackedRequestIndex != "" {
 		trackedRequest, err := m.RequestTracker.GetTrackedRequest(r, trackedRequestIndex)
 		if err != nil {
 			if err == http.ErrNoCookie && m.ServiceProvider.AllowIDPInitiated {

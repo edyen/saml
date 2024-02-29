@@ -1061,6 +1061,9 @@ func (sp *ServiceProvider) validateAssertion(assertion *Assertion, possibleReque
 			if !requestIDvalid {
 				return fmt.Errorf("assertion SubjectConfirmation one of the possible request IDs (%v)", possibleRequestIDs)
 			}
+		} else {
+			// Validate with @ivan-californias
+			requestIDvalid = true
 		}
 		if subjectConfirmation.SubjectConfirmationData.Recipient != sp.AcsURL.String() {
 			return fmt.Errorf("assertion SubjectConfirmation Recipient is not %s", sp.AcsURL.String())
